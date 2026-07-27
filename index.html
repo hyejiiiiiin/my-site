@@ -256,6 +256,37 @@
     .project-card .link svg { transition: transform .2s; }
     .project-card:hover .link svg { transform: translateX(3px); }
 
+    /* 시트에서 불러온 프로젝트 표 */
+    .projects-status { color: var(--text-mute); font-size: .95rem; padding: 10px 2px; }
+    .table-scroll {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      background: var(--surface);
+    }
+    .projects-table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+    .projects-table th, .projects-table td {
+      text-align: left;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .projects-table thead th {
+      font-size: .76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-mute);
+      background: var(--bg-soft);
+    }
+    .projects-table tbody tr:last-child td { border-bottom: none; }
+    .projects-table tbody tr { transition: background .15s; }
+    .projects-table tbody tr:hover { background: var(--accent-soft); }
+    .projects-table td:first-child { font-weight: 600; color: var(--text); }
+    .projects-table a { color: var(--accent); font-weight: 600; }
+    .projects-table a:hover { text-decoration: underline; }
+
     /* ---------- 연락처 ---------- */
     .contact-card {
       background: var(--surface);
@@ -371,34 +402,11 @@
       </div>
     </section>
 
-    <!-- 주요 프로젝트 -->
+    <!-- 주요 프로젝트 (Google Sheets에서 동적 로드) -->
     <section id="projects">
       <p class="section-title">Projects</p>
-      <div class="cards">
-        <div class="project-card">
-          <span class="tag">시계열 예측</span>
-          <h3>에너지 수요 예측 엔진</h3>
-          <p>전력·가스 수요를 시간 단위로 예측해 운영 계획과 리스크 대응을 앞당긴 예측 모델 파이프라인.</p>
-          <a href="#" class="link">자세히 보기
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-        <div class="project-card">
-          <span class="tag">AI 자동화</span>
-          <h3>리포트 자동 생성 워크플로</h3>
-          <p>수집·분석·보고로 이어지는 반복 업무를 AI 파이프라인으로 묶어 정기 리포트를 자동 발행.</p>
-          <a href="#" class="link">자세히 보기
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
-        <div class="project-card">
-          <span class="tag">데이터 시각화</span>
-          <h3>운영 인사이트 대시보드</h3>
-          <p>흩어진 지표를 하나의 대시보드로 모아 현장과 경영진이 같은 화면에서 의사결정하도록 지원.</p>
-          <a href="#" class="link">자세히 보기
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          </a>
-        </div>
+      <div id="projects-view" class="projects-view">
+        <p class="projects-status">프로젝트를 불러오는 중…</p>
       </div>
     </section>
 
@@ -422,6 +430,56 @@
   <footer>
     <div class="wrap">© 2026 신혜진 · 데이터로 에너지 산업의 문제를 푸는 사람</div>
   </footer>
+
+  <script>
+    // 페이지 로드 시 /api/sheet 를 호출해 프로젝트 목록을 표로 렌더 (첫 줄 = 제목행)
+    (async function loadProjects() {
+      const view = document.getElementById('projects-view');
+      try {
+        const res = await fetch('/api/sheet');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const rows = Array.isArray(data.rows) ? data.rows : [];
+        if (rows.length === 0) {
+          view.innerHTML = '<p class="projects-status">등록된 프로젝트가 없습니다.</p>';
+          return;
+        }
+        const [header, ...body] = rows;
+        view.innerHTML = renderTable(header, body);
+      } catch (err) {
+        view.innerHTML = '<p class="projects-status">프로젝트를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>';
+      }
+    })();
+
+    // 시트 데이터가 HTML로 삽입되므로 항상 이스케이프 (XSS 방지)
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+
+    // 값이 URL이면 링크로, 아니면 텍스트로 렌더
+    function renderCell(value) {
+      const v = String(value == null ? '' : value);
+      if (/^https?:\/\//i.test(v)) {
+        return '<a href="' + escapeHtml(v) + '" target="_blank" rel="noopener noreferrer">링크 →</a>';
+      }
+      return escapeHtml(v);
+    }
+
+    function renderTable(header, body) {
+      const thead =
+        '<thead><tr>' + header.map(function (h) { return '<th>' + escapeHtml(h) + '</th>'; }).join('') + '</tr></thead>';
+      const tbody =
+        '<tbody>' +
+        body.map(function (row) {
+          const cells = header.map(function (_, i) { return '<td>' + renderCell(row[i]) + '</td>'; }).join('');
+          return '<tr>' + cells + '</tr>';
+        }).join('') +
+        '</tbody>';
+      return '<div class="table-scroll"><table class="projects-table">' + thead + tbody + '</table></div>';
+    }
+  </script>
 
 </body>
 </html>

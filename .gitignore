@@ -1,0 +1,22 @@
+# 의존성
+node_modules/
+
+# 환경변수 (절대 커밋 금지)
+.env
+.env.*
+
+# Google 서비스 계정 키 (절대 커밋 금지)
+*.json
+!package.json
+!package-lock.json
+!.vercel/*.json
+my-site-*.json
+
+# Vercel
+.vercel/
+
+# 로그
+*.log
+
+# Claude Code 로컬 설정
+.claude/settings.local.json
