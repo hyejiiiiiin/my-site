@@ -10,31 +10,33 @@
     /* ---------- 디자인 토큰 ---------- */
     :root {
       --bg: #ffffff;
-      --bg-soft: #f3f5f9;
+      --bg-soft: #f4f4f5;
       --surface: #ffffff;
-      --border: #e2e7f0;
-      --text: #12203a;
-      --text-soft: #47546c;
-      --text-mute: #7e8aa1;
-      --accent: #1e3a63;
-      --accent-2: #2f5a97;
-      --accent-soft: rgba(30, 58, 99, 0.08);
-      --shadow: 0 1px 2px rgba(18,32,58,.05), 0 10px 30px rgba(18,32,58,.07);
+      --border: #e4e4e7;
+      --text: #1c1c1f;
+      --text-soft: #52525b;
+      --text-mute: #8a8a92;
+      --accent: #3f3f46;
+      --accent-2: #71717a;
+      --accent-soft: rgba(63, 63, 70, 0.08);
+      --on-accent: #ffffff;
+      --shadow: 0 1px 2px rgba(24,24,27,.05), 0 10px 30px rgba(24,24,27,.07);
       --radius: 18px;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0a1120;
-        --bg-soft: #111c30;
-        --surface: #101a2c;
-        --border: #22314b;
-        --text: #eef2f8;
-        --text-soft: #aeb9cd;
-        --text-mute: #74829a;
-        --accent: #6f9bd8;
-        --accent-2: #8fb4e6;
-        --accent-soft: rgba(111, 155, 216, 0.14);
+        --bg: #0e0e10;
+        --bg-soft: #17171a;
+        --surface: #161618;
+        --border: #2a2a2e;
+        --text: #f2f2f3;
+        --text-soft: #b1b1b8;
+        --text-mute: #77777f;
+        --accent: #c4c4cc;
+        --accent-2: #9a9aa3;
+        --accent-soft: rgba(196, 196, 204, 0.12);
+        --on-accent: #16161a;
         --shadow: 0 1px 2px rgba(0,0,0,.45), 0 14px 36px rgba(0,0,0,.5);
       }
     }
@@ -86,7 +88,7 @@
       display: grid; place-items: center;
       border-radius: 10px;
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      color: #fff;
+      color: var(--on-accent);
       font-size: 13px;
       font-weight: 800;
       letter-spacing: 0.02em;
@@ -164,7 +166,7 @@
     .btn:hover { transform: translateY(-2px); }
     .btn-primary {
       background: var(--accent);
-      color: #fff;
+      color: var(--on-accent);
       border-color: var(--accent);
       box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 35%, transparent);
     }
